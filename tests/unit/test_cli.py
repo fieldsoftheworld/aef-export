@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
 
-from aef_export.cli import coverage
+from aef_export.cli import coverage, image
 
 
 @patch("aef_export.cli.export_image_collection")
@@ -47,3 +47,70 @@ def test_coverage_command_missing_arguments():
     result = runner.invoke(coverage, ["test_dataset"])
     assert result.exit_code == 2
     assert "Missing argument" in result.output
+
+
+@patch("aef_export.cli.export_image")
+@patch("aef_export.cli.initialize_ee")
+@patch("aef_export.cli.get_settings")
+def test_image_command_success(
+    mock_get_settings, mock_initialize_ee, mock_export_image
+):
+    # Setup mocks
+    mock_settings = MagicMock()
+    mock_settings.google_cloud_project = "test-project"
+    mock_get_settings.return_value = mock_settings
+    mock_export_image.return_value = "image_task_123"
+
+    runner = CliRunner()
+    result = runner.invoke(
+        image, ["PROJECTS/test/assets/test_image", "test-bucket", "test/prefix"]
+    )
+
+    # Verify the calls
+    mock_get_settings.assert_called_once()
+    mock_initialize_ee.assert_called_once_with("test-project")
+    mock_export_image.assert_called_once_with(
+        "PROJECTS/test/assets/test_image", "test-bucket", "test/prefix/", False
+    )
+
+    # Verify the output and exit code
+    assert result.exit_code == 0
+    assert "Task id: image_task_123" in result.output
+
+
+@patch("aef_export.cli.export_image")
+@patch("aef_export.cli.initialize_ee")
+@patch("aef_export.cli.get_settings")
+def test_image_command_with_quantize_flag(
+    mock_get_settings, mock_initialize_ee, mock_export_image
+):
+    # Setup mocks
+    mock_settings = MagicMock()
+    mock_settings.google_cloud_project = "test-project"
+    mock_get_settings.return_value = mock_settings
+    mock_export_image.return_value = "quantized_task_456"
+
+    runner = CliRunner()
+    result = runner.invoke(
+        image,
+        [
+            "PROJECTS/test/assets/embedding_image",
+            "embedding-bucket",
+            "quantized/prefix",
+            "--quantize",
+        ],
+    )
+
+    # Verify the calls
+    mock_get_settings.assert_called_once()
+    mock_initialize_ee.assert_called_once_with("test-project")
+    mock_export_image.assert_called_once_with(
+        "PROJECTS/test/assets/embedding_image",
+        "embedding-bucket",
+        "quantized/prefix/",
+        True,
+    )
+
+    # Verify the output and exit code
+    assert result.exit_code == 0
+    assert "Task id: quantized_task_456" in result.output
