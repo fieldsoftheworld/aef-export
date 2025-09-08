@@ -48,6 +48,9 @@ def image(
     """
     settings = get_settings()
 
+    if not gcs_key_prefix.endswith("/"):
+        gcs_key_prefix += "/"
+
     initialize_ee(settings.google_cloud_project)
     task_id = export_image(image_id, gcs_bucket_name, gcs_key_prefix, quantize)
     click.echo(f"Task id: {task_id}")
