@@ -33,7 +33,7 @@ def export_image(
 ) -> str:
     """Export an Earth Engine Image to Google Cloud Storage.
 
-    Exports an Earth Engine Image asset to Google Cloud Storage as a Cloud
+    Exports an Earth Engine image to Google Cloud Storage as a Cloud
     Optimized GeoTIFF. Optionally applies quantization to reduce file size.
     Uses workload tags for Earth Engine quota management.
 
