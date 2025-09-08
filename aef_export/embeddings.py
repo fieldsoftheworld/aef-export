@@ -38,7 +38,7 @@ def export_image(
     Uses workload tags for Earth Engine quota management.
 
     Args:
-        image_id: Earth Engine Image asset ID to export.
+        image_id: Earth Engine image id to export.
         gcs_bucket_name: Google Cloud Storage bucket name for the export.
         gcs_key_prefix: GCS object key prefix for the exported file.
         quantize: Whether to apply quantization to the image values. Defaults to False.
