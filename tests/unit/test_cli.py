@@ -70,7 +70,7 @@ def test_image_command_success(
     mock_get_settings.assert_called_once()
     mock_initialize_ee.assert_called_once_with("test-project")
     mock_export_image.assert_called_once_with(
-        "PROJECTS/test/assets/test_image", "test-bucket", "test/prefix", False
+        "PROJECTS/test/assets/test_image", "test-bucket", "test/prefix/", False
     )
 
     # Verify the output and exit code
@@ -107,7 +107,7 @@ def test_image_command_with_quantize_flag(
     mock_export_image.assert_called_once_with(
         "PROJECTS/test/assets/embedding_image",
         "embedding-bucket",
-        "quantized/prefix",
+        "quantized/prefix/",
         True,
     )
 
