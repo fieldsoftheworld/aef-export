@@ -34,5 +34,5 @@ aef-export coverage <BQ_DATASET_NAME> <BQ_TABLE_NAME>
 Export a single image to GCS, an example image ID is `GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL/xs6bvzj41inm2e1cc`.  It is recommended to export embeddings in their quantized form (int8) to reduce storage costs.
 
 ```bash
-aef-export image <GCS_BUCKET_NAME> <GCS_KEY_PREFIX> --quantize
+aef-export image <IMAGE_ID> <GCS_BUCKET_NAME> <GCS_KEY_PREFIX> --quantize
 ```
