@@ -1,6 +1,8 @@
 import ee
 
 from aef_export.utils import set_workload_tag
+from aef_export.sqlite import init_database, Row, insert_row
+from aef_export.coverage import query_coverage
 
 
 def _quantize_embeddings(image: ee.Image) -> ee.Image:
@@ -71,3 +73,42 @@ def export_image(
         task.start()
 
     return task.id
+
+
+def export_aoi(
+    geojson_geometry: dict,
+    bq_dataset_name: str,
+    bq_table_name: str,
+    gcs_bucket_name: str,
+    job_name: str,
+    limit: int | None = None,
+):
+    init_database()
+
+    rows_to_export = query_coverage(
+        geojson_geometry, bq_dataset_name, bq_table_name, limit
+    )
+    for row in rows_to_export:
+        # Build the key prefix.
+        system_id = row["system_id"]
+        year = row["year"]
+        utm_zone = row["utm_zone"]
+        key_prefix = "/".join([job_name, year, utm_zone, system_id.split("/")[-1]])
+
+        # Start the export.
+        # TODO: Protect against 3000+ tasks in the queue.
+        task_id = export_image(system_id, gcs_bucket_name, key_prefix, quantize=True)
+        print("Submitting task: ", task_id)
+
+        # Insert record of this row into sqlite
+        row = Row(
+            task_id="task_id",
+            job_name=job_name,
+            eecu_seconds=None,
+            runtime_seconds=None,
+            status="queued",
+            image_id=system_id,
+            year=year,
+            s3_path=f"s3://{gcs_bucket_name}/{key_prefix}",
+        )
+        insert_row(row)
