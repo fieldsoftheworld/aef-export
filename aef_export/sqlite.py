@@ -8,7 +8,6 @@ DATABASE_NAME = "sqlite_aef_export.db"
 @dataclass
 class Row:
     task_id: str
-    job_name: str
     eecu_seconds: float | None
     runtime_seconds: float | None
     status: str
@@ -27,7 +26,6 @@ def init_database():
         CREATE TABLE IF NOT EXISTS exports(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id VARCHAR,
-            job_name VARCHAR,
             eecu_seconds FLOAT,
             runtime_seconds FLOAT,
             status VARCHAR,

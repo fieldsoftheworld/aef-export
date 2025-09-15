@@ -65,14 +65,12 @@ def image(
 @click.argument("bq_dataset_name")
 @click.argument("bq_table_name")
 @click.argument("gcs_bucket_name")
-@click.option("--job-name", type=str, required=True)
 @click.option("--limit", type=int, required=False, default=None)
 def aoi(
     geojson_filepath: str,
     bq_dataset_name: str,
     bq_table_name: str,
     gcs_bucket_name: str,
-    job_name: str,
     limit: int | None = None,
 ):
     settings = get_settings()
@@ -90,9 +88,7 @@ def aoi(
             "Input file must be a geojson polygon, either geometry or feature"
         )
 
-    export_aoi(
-        polygon, bq_dataset_name, bq_table_name, gcs_bucket_name, job_name, limit
-    )
+    export_aoi(polygon, bq_dataset_name, bq_table_name, gcs_bucket_name, limit)
 
 
 @app.group()

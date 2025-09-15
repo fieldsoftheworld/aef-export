@@ -80,7 +80,6 @@ def export_aoi(
     bq_dataset_name: str,
     bq_table_name: str,
     gcs_bucket_name: str,
-    job_name: str,
     limit: int | None = None,
 ):
     init_database()
@@ -93,9 +92,7 @@ def export_aoi(
         system_id = row["system_id"]
         year = row["year"]
         utm_zone = row["utm_zone"]
-        key_prefix = (
-            "/".join([job_name, year, utm_zone, system_id.split("/")[-1]]) + "/"
-        )
+        key_prefix = "/".join([year, utm_zone, system_id.split("/")[-1]]) + "/"
 
         # Start the export.
         # TODO: Protect against 3000+ tasks in the queue.
@@ -105,7 +102,6 @@ def export_aoi(
         # Insert record of this row into sqlite
         row = Row(
             task_id=task_id,
-            job_name=job_name,
             eecu_seconds=None,
             runtime_seconds=None,
             status="queued",

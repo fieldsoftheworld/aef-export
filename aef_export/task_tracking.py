@@ -25,8 +25,6 @@ def update_db_state():
     for task in list_tasks():
         task_state = task["metadata"]["state"]
         task_id = task["name"].split("/")[-1]
-        print(task_id)
-
         eecu_seconds = None
         duration_seconds = None
         if task_state == "SUCCEEDED":
