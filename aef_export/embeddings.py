@@ -102,7 +102,7 @@ def export_aoi(
 
         # Insert record of this row into sqlite
         row = Row(
-            task_id="task_id",
+            task_id=task_id,
             job_name=job_name,
             eecu_seconds=None,
             runtime_seconds=None,
