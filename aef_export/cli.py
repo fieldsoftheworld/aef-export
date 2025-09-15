@@ -4,6 +4,7 @@ import json
 from aef_export.embeddings import export_image, export_aoi
 from aef_export.coverage import export_image_collection
 from aef_export.settings import get_settings
+from aef_export.task_tracking import update_db_state, get_task_summary, BillingTier
 from aef_export.utils import initialize_ee
 
 
@@ -92,3 +93,23 @@ def aoi(
     export_aoi(
         polygon, bq_dataset_name, bq_table_name, gcs_bucket_name, job_name, limit
     )
+
+
+@app.group()
+def db():
+    pass
+
+
+@db.command()
+def update_task_status():
+    settings = get_settings()
+    initialize_ee(settings.google_cloud_project)
+    update_db_state()
+
+
+@db.command()
+@click.option(
+    "--billing-tier", type=click.Choice(BillingTier), default=BillingTier.tier1
+)
+def summarize(billing_tier: BillingTier = BillingTier.tier1):
+    click.echo(json.dumps(get_task_summary(billing_tier)))

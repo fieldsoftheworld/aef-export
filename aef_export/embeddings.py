@@ -93,7 +93,9 @@ def export_aoi(
         system_id = row["system_id"]
         year = row["year"]
         utm_zone = row["utm_zone"]
-        key_prefix = "/".join([job_name, year, utm_zone, system_id.split("/")[-1]])
+        key_prefix = (
+            "/".join([job_name, year, utm_zone, system_id.split("/")[-1]]) + "/"
+        )
 
         # Start the export.
         # TODO: Protect against 3000+ tasks in the queue.

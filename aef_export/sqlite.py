@@ -47,3 +47,33 @@ def insert_row(row: Row):
     cur = get_connection()
     cur.execute(query, tuple(d.values()))
     cur.commit()
+
+
+def update_row(
+    task_id: str,
+    status: str,
+    eecu_seconds: float | None = None,
+    runtime_seconds: float | None = None,
+):
+    query = "UPDATE exports SET status = ?, eecu_seconds = ?, runtime_seconds = ? WHERE task_id = ?"
+    cur = get_connection()
+    cur.execute(query, (status, eecu_seconds, runtime_seconds, task_id))
+    cur.commit()
+
+
+def get_summary():
+    query = """
+        SELECT
+            status,
+            COUNT(*) as count,
+            SUM(eecu_seconds) as eecu_seconds,
+            AVG(runtime_seconds) as avg_runtime_seconds
+        FROM exports
+        GROUP BY status;
+    """
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute(query)
+    resp = cur.fetchall()
+    return [dict(row) for row in resp]
