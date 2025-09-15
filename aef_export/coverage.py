@@ -1,5 +1,9 @@
-import ee
 import uuid
+from typing import Generator
+
+import ee
+from google.cloud import bigquery
+from shapely.geometry import shape
 
 from aef_export.utils import set_workload_tag
 
@@ -77,3 +81,27 @@ def export_image_collection(
         task.start()
 
     return task.id
+
+
+def query_coverage(
+    geojson_geometry: dict,
+    bq_dataset_name: str,
+    bq_table_name: str,
+    limit: int | None = None,
+) -> Generator[dict, None, None]:
+    geom = shape(geojson_geometry)
+
+    bq_client = bigquery.Client()
+    query = f"""
+        SELECT
+            `system:id` as system_id,
+            SPLIT(start_date, '-')[OFFSET(0)] as year,
+            UTM_ZONE as utm_zone
+        FROM {bq_dataset_name}.{bq_table_name}
+        WHERE ST_Intersects(ST_GEOGFROMTEXT('{geom.wkt}'), geo)
+    """
+    if limit:
+        query += f" LIMIT {limit}"
+    query_job = bq_client.query(query)
+    for row in query_job.result():
+        yield dict(row)
