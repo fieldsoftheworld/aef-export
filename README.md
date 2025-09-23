@@ -39,7 +39,7 @@ aef-export image <IMAGE_ID> <GCS_BUCKET_NAME> <GCS_KEY_PREFIX> --quantize
 
 ## AOI Export
 
-First run the `aef-export coverage` command to generate a BQ table which serves as an index for the AEF dataset.  Then export AEF data to the specified GCS bucket for a given area of interest.  This will
+First run the `aef-export coverage` command to generate a BQ table which serves as an index for the AEF dataset.  Then export AEF data to the specified GCS bucket (as COG) for a given area of interest.  This will
 query the BQ table and submit a earth engine batch task to export each AEF image intersecting the provided geojson.  It currently exports ALL years (PRs are welcome!).
 
 ```bash
