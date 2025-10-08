@@ -11,6 +11,8 @@ import utm
 import geopandas as gpd
 from google.cloud import storage
 
+from aef_export.embeddings import _quantize_embeddings
+
 
 storage_client = storage.Client()
 
@@ -38,6 +40,7 @@ def _fetch_array(year: int, geom: Polygon, spatial_res_meters: int = 10) -> np.n
         .filterDate(ee.Date(f"{year}-01-01"), ee.Date(f"{year + 1}-01-01"))
     )
     image = images.first()
+    image = _quantize_embeddings(image)
 
     # Build an export request
     centroid = geom.centroid
