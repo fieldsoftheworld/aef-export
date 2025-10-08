@@ -112,7 +112,7 @@ def _fetch_and_upload_embeddings(
     geom: Polygon, country: str, aoi_id: str, year: int
 ) -> str:
     embeddings = _fetch_array(year, geom)
-    key = f"chips/{country}/{year}/{aoi_id}.npz"
+    key = f"chips/{country}/{year}/{aoi_id}.npy"
     return _upload_numpy_array_to_gcs(key, embeddings)
 
 
