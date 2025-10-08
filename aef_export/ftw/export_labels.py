@@ -14,7 +14,9 @@ from google.cloud import storage
 from aef_export.embeddings import _quantize_embeddings
 
 
-storage_client = storage.Client()
+@lru_cache()
+def get_gcs_client():
+    return storage.Client()
 
 
 @lru_cache()
@@ -89,7 +91,7 @@ def _upload_numpy_array_to_gcs(
         numpy_array (np.ndarray): The NumPy array to upload.
     """
     bucket_name = "ftw-aef-export"
-    bucket = storage_client.bucket(bucket_name)
+    bucket = get_gcs_client().bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
     # Serialize the NumPy array to bytes
