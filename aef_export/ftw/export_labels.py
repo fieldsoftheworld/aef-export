@@ -34,7 +34,13 @@ def _utm_zone_from_latlon(lat: float, lon: float) -> str:
         return f"EPSG:326{zone_number}"
 
 
-def _fetch_array(year: int, geom: Polygon, spatial_res_meters: int = 10) -> np.ndarray:
+def _fetch_array(
+    year: int,
+    geom: Polygon,
+    spatial_res_meters: int = 10,
+    width: int | None = None,
+    height: int | None = None,
+) -> np.ndarray:
     # Find the right EE image
     images = (
         ee.ImageCollection("GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL")
@@ -50,8 +56,11 @@ def _fetch_array(year: int, geom: Polygon, spatial_res_meters: int = 10) -> np.n
     transformer = _get_transformer(utm_zone)
     xmin, ymin, xmax, ymax = transformer.transform_bounds(*geom.bounds)
 
-    width = int((xmax - xmin) / spatial_res_meters)
-    height = int((ymax - ymin) / spatial_res_meters)
+    if not width:
+        width = int((xmax - xmin) / spatial_res_meters)
+
+    if not height:
+        height = int((ymax - ymin) / spatial_res_meters)
 
     transform = affine.Affine.translation(xmin, ymax) * affine.Affine.scale(
         (xmax - xmin) / width, (ymin - ymax) / height
@@ -108,15 +117,26 @@ def _upload_numpy_array_to_gcs(
 
 
 def _fetch_and_upload_embeddings(
-    geom: Polygon, country: str, aoi_id: str, year: int, bucket_name: str
+    geom: Polygon,
+    country: str,
+    aoi_id: str,
+    year: int,
+    bucket_name: str,
+    width: int | None = None,
+    height: int | None = None,
 ) -> str:
-    embeddings = _fetch_array(year, geom)
+    embeddings = _fetch_array(year, geom, width=width, height=height)
     key = f"chips/{country}/{year}/{aoi_id}.npy"
     return _upload_numpy_array_to_gcs(bucket_name, key, embeddings)
 
 
 def export_labels_for_year(
-    gdf: gpd.GeoDataFrame, year: int, bucket_name: str, max_workers: int | None = None
+    gdf: gpd.GeoDataFrame,
+    year: int,
+    bucket_name: str,
+    max_workers: int | None = None,
+    width: int | None = None,
+    height: int | None = None,
 ) -> gpd.GeoDataFrame:
     with concurrent.futures.ThreadPoolExecutor(max_workers) as exec:
         tasks = {}
@@ -128,6 +148,8 @@ def export_labels_for_year(
                 row.aoi_id,
                 year,
                 bucket_name,
+                width,
+                height,
             )
             tasks[future] = row.Index
 
