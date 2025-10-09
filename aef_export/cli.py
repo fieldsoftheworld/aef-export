@@ -1,11 +1,14 @@
 import click
 import json
 
+import geopandas as gpd
+
 from aef_export.embeddings import export_image, export_aoi
 from aef_export.coverage import export_image_collection
 from aef_export.settings import get_settings
 from aef_export.task_tracking import update_db_state, get_task_summary, BillingTier
 from aef_export.utils import initialize_ee
+from aef_export.ftw.export_labels import export_labels_for_year
 
 
 @click.group()
@@ -109,3 +112,33 @@ def update_task_status():
 )
 def summarize(billing_tier: BillingTier = BillingTier.tier1):
     click.echo(json.dumps(get_task_summary(billing_tier)))
+
+
+@app.group()
+def ftw():
+    pass
+
+
+@ftw.command()
+@click.argument("infile")
+@click.argument("outfile")
+@click.option("--year", type=int, required=True)
+@click.option("--bucket-name", type=str, required=True)
+@click.option("--num-threads", type=int, required=False, default=None)
+@click.option("--width", type=int, required=False, default=None)
+@click.option("--height", type=int, required=False, default=None)
+def process_labels(
+    infile: str,
+    outfile: str,
+    year: int,
+    bucket_name: str,
+    num_threads: int | None = None,
+    width: int | None = None,
+    height: int | None = None,
+):
+    settings = get_settings()
+    initialize_ee(settings.google_cloud_project)
+
+    gdf = gpd.read_parquet(infile)
+    out_df = export_labels_for_year(gdf, year, bucket_name, num_threads, width, height)
+    out_df.to_parquet(outfile)
