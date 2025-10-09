@@ -81,7 +81,7 @@ def _fetch_array(year: int, geom: Polygon, spatial_res_meters: int = 10) -> np.n
 
 
 def _upload_numpy_array_to_gcs(
-    destination_blob_name: str, numpy_array: np.ndarray
+    bucket_name: str, destination_blob_name: str, numpy_array: np.ndarray
 ) -> str:
     """Uploads a NumPy array to a GCS bucket.
 
@@ -90,7 +90,6 @@ def _upload_numpy_array_to_gcs(
         destination_blob_name (str): The name of the blob in the bucket (e.g., 'my_array.npy').
         numpy_array (np.ndarray): The NumPy array to upload.
     """
-    bucket_name = "ftw-aef-export"
     bucket = get_gcs_client().bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
@@ -109,15 +108,15 @@ def _upload_numpy_array_to_gcs(
 
 
 def _fetch_and_upload_embeddings(
-    geom: Polygon, country: str, aoi_id: str, year: int
+    geom: Polygon, country: str, aoi_id: str, year: int, bucket_name: str
 ) -> str:
     embeddings = _fetch_array(year, geom)
     key = f"chips/{country}/{year}/{aoi_id}.npy"
-    return _upload_numpy_array_to_gcs(key, embeddings)
+    return _upload_numpy_array_to_gcs(bucket_name, key, embeddings)
 
 
 def export_labels_for_year(
-    gdf: gpd.GeoDataFrame, year: int, max_workers: int | None = None
+    gdf: gpd.GeoDataFrame, year: int, bucket_name: str, max_workers: int | None = None
 ) -> gpd.GeoDataFrame:
     with concurrent.futures.ThreadPoolExecutor(max_workers) as exec:
         tasks = {}
@@ -128,6 +127,7 @@ def export_labels_for_year(
                 row.country,
                 row.aoi_id,
                 year,
+                bucket_name,
             )
             tasks[future] = row.Index
 

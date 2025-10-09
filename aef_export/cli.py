@@ -123,13 +123,18 @@ def ftw():
 @click.argument("infile")
 @click.argument("outfile")
 @click.option("--year", type=int, required=True)
+@click.option("--bucket-name", type=str, required=True)
 @click.option("--num-threads", type=int, required=False, default=None)
 def process_labels(
-    infile: str, outfile: str, year: int, num_threads: int | None = None
+    infile: str,
+    outfile: str,
+    year: int,
+    bucket_name: str,
+    num_threads: int | None = None,
 ):
     settings = get_settings()
     initialize_ee(settings.google_cloud_project)
 
     gdf = gpd.read_parquet(infile)
-    out_df = export_labels_for_year(gdf, year, num_threads)
+    out_df = export_labels_for_year(gdf, year, bucket_name, num_threads)
     out_df.to_parquet(outfile)
